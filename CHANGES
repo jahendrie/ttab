@@ -1,0 +1,4 @@
+2014-01-18      0.92    Initial release
+
+2021-03-11      0.93    Fixed a printing bug with summing from stdin, truncates
+                        zeroes now
