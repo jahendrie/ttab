@@ -2,3 +2,6 @@
 
 2021-03-11      0.93    Fixed a printing bug with summing from stdin, truncates
                         zeroes now
+
+2021-04-03      0.94    Will disregard input after a '#' on a line that includes
+                        it (i.e., comments)

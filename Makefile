@@ -6,7 +6,8 @@
 CC=gcc
 PREFIX=/usr
 FILES=ttab.c
-OPTFLAGS=-g -Wall
+#OPTFLAGS=-g -Wall
+OPTFLAGS=-O3
 OUTPUT=ttab
 SRC=src
 DOC=doc

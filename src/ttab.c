@@ -1,5 +1,5 @@
 /*******************************************************************************
- * ttab.c   |   v 0.93  |   GPL v 3     |   2021-03-11
+ * ttab.c   |   v 0.94  |   GPL v 3     |   2021-04-03
  * James Hendrie        |   hendrie dot james at gmail dot com
  *
  *      ttab is a simple adding program; you use it to add or subtract one
@@ -13,12 +13,15 @@
 #include <string.h>
 #include <time.h>
 
+#define TTAB_VERSION "0.94"
+
 #define DATE_STRING_LEN 25
 #define NUM_STRING_LEN 64
+#define MAX_STRING_LEN 80
 
 double total;
 double entered;
-char line[80];
+char line[ (MAX_STRING_LEN) ];
 char *saveLocation;
 char mode;
 
@@ -134,7 +137,7 @@ void print_help(void)
 
 void print_version_info(void)
 {
-    printf("ttab version 0.92\n");
+    printf("ttab version %s\n", (TTAB_VERSION) );
     printf("James Hendrie ( hendrie dot james at gmail dot com )\n");
 }
 
@@ -227,12 +230,22 @@ void truncate_zeroes( double total )
  */
 void sum_log_stdin(void)
 {
+    /*  Make a copy of the line but exclude comments */
+    char good[ (MAX_STRING_LEN) ];
+    for( int i = 0, ch = line[ i ]; i < strlen( line ); ++i )
+    {
+        if( ch == '#' )
+            break;
+        good[ i ] = line[ i ];
+    }
+
+
     char *theNumber = NULL;     //  Used for strtok
 
-    while( fgets(line, 80, stdin) != NULL )
+    while( fgets(good, 80, stdin) != NULL )
     {
         /*  Check for ttab logs */
-        if( strcmp(line, "----------------------------------------\n") == 0 )
+        if( strcmp(good, "----------------------------------------\n") == 0 )
         {
             /*
              * If it's a ttab log, send it to the standard sum_log function and
@@ -248,7 +261,7 @@ void sum_log_stdin(void)
          * We'll use strtok to tokenize the string, number by number, using the
          * space character as a delimiter
          */
-        theNumber = strtok(line, " ");
+        theNumber = strtok(good, " ");
         while( theNumber != NULL )
         {
             total += atof(theNumber);       //  ADD 'ER UP BABY
@@ -275,8 +288,17 @@ void sum_log(FILE *fp)
     {
         counter = 0;    //  Reset counter
 
+        /*  Make a copy of the line but exclude comments */
+        char good[ (MAX_STRING_LEN) ];
+        for( int i = 0, ch = line[ i ]; i < strlen( line ); ++i )
+        {
+            if( ch == '#' )
+                break;
+            good[ i ] = line[ i ];
+        }
+
         /*  If we run into a ttab log, go into ttab log mode */
-        if( strcmp( line, "TTAB LOG\n") == 0 )
+        if( strcmp( good, "TTAB LOG\n") == 0 )
         {
             ttabLogMode = 1;
         }
@@ -286,12 +308,12 @@ void sum_log(FILE *fp)
         {
             numberLocation = NULL;  //  Null out number location pointer
 
-            ch = line[counter];     //  Initialize ch
+            ch = good[counter];     //  Initialize ch
 
             /*  While we're getting characters that are potentially useful */
             while( ch != '\n' && ch != '\0' && ch != EOF )
             {
-                ch = line[counter];     //  Reset ch to its position in the line
+                ch = good[counter];     //  Reset ch to its position in the line
                 
                 if( ch == '\t' )        //  If we find a tab character
                 {
@@ -299,13 +321,13 @@ void sum_log(FILE *fp)
                      * If the next character after the tab is a plus or a minus,
                      * we've finally found our number
                      */
-                    if( line[counter + 1] == '+' || line[counter + 1] == '-' )
+                    if( good[counter + 1] == '+' || good[counter + 1] == '-' )
                     {
                         /*
                          * Here we assign the address of the position in the
                          * string where we've found the number to numberLocation
                          */
-                        numberLocation = &line[counter+1];
+                        numberLocation = &good[counter+1];
                         break;
                     }
                 }
@@ -324,7 +346,7 @@ void sum_log(FILE *fp)
         else    //  If we're doing a normal file / stdin
         {
             /*  Add whatever's on the line to the total */
-            total += atof(line);
+            total += atof(good);
         }
     }
 
@@ -767,7 +789,7 @@ int main(int argc, char *argv[])
             return(0);
         }
 
-        if( strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0 )
+        if( strcmp(argv[1], "-V") == 0 || strcmp(argv[1], "--version") == 0 )
         {
             print_version_info();
             return(0);
@@ -797,6 +819,7 @@ int main(int argc, char *argv[])
 
         return(0);
     }
+
 
     /*  Initialize some numbers */
     total = 0;
