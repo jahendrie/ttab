@@ -1,5 +1,5 @@
 /*******************************************************************************
- * ttab.c   |   v 0.94  |   GPL v 3     |   2021-04-03
+ * ttab.c   |   v 0.95  |   GPL v 3     |   2021-04-06
  * James Hendrie        |   hendrie dot james at gmail dot com
  *
  *      ttab is a simple adding program; you use it to add or subtract one
@@ -13,7 +13,7 @@
 #include <string.h>
 #include <time.h>
 
-#define TTAB_VERSION "0.94"
+#define TTAB_VERSION "0.95"
 
 #define DATE_STRING_LEN 25
 #define NUM_STRING_LEN 64
@@ -230,20 +230,23 @@ void truncate_zeroes( double total )
  */
 void sum_log_stdin(void)
 {
-    /*  Make a copy of the line but exclude comments */
-    char good[ (MAX_STRING_LEN) ];
-    for( int i = 0, ch = line[ i ]; i < strlen( line ); ++i )
-    {
-        if( ch == '#' )
-            break;
-        good[ i ] = line[ i ];
-    }
 
 
     char *theNumber = NULL;     //  Used for strtok
+    char good[ (MAX_STRING_LEN) ];
 
-    while( fgets(good, 80, stdin) != NULL )
+    while( fgets(line, 80, stdin) != NULL )
     {
+        /*  Reset the 'good' number */
+        memset( good, '\0', (MAX_STRING_LEN) );
+
+        for( int i = 0, ch = line[ i ]; i < strlen( line ); ++i )
+        {
+            if( ch == '#' )
+                break;
+            good[ i ] = line[ i ];
+        }
+
         /*  Check for ttab logs */
         if( strcmp(good, "----------------------------------------\n") == 0 )
         {
@@ -271,7 +274,6 @@ void sum_log_stdin(void)
 
     /*  Print our total */
     truncate_zeroes( total );
-    //printf("%lf\n", total);
 }
 
 
@@ -283,13 +285,15 @@ void sum_log(FILE *fp)
     counter = 0;                    //  ''
     total = 0;                      //  Our total
 
+    char good[ (MAX_STRING_LEN) ];
+
     /*  Get lines from file pointer */
     while( fgets(line, 80, fp) != NULL )
     {
         counter = 0;    //  Reset counter
 
         /*  Make a copy of the line but exclude comments */
-        char good[ (MAX_STRING_LEN) ];
+        memset( good, '\0', (MAX_STRING_LEN) );
         for( int i = 0, ch = line[ i ]; i < strlen( line ); ++i )
         {
             if( ch == '#' )
@@ -783,6 +787,7 @@ int main(int argc, char *argv[])
     }
     else if( argc == 2 )
     {
+
         if( strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0 )
         {
             print_help();
